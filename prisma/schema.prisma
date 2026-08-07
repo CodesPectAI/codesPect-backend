@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "postgresql"
+//   // Connection URLs are now configured outside of the schema (see Prisma docs):
+//   // Move DATABASE_URL to prisma.config.ts or provide the connection when
+//   // constructing the PrismaClient (adapter/accelerateUrl).
+//   // url = env("DATABASE_URL")
+// }
+
+// ======================================================
+// ENUMS
+// ======================================================
+
+enum AccountType {
+  USER
+  ORGANIZATION
+
+  @@map("account_type_enum")
+}
+
+enum PullRequestStatus {
+  OPEN
+  CLOSED
+  MERGED
+
+  @@map("pull_request_status_enum")
+}
+
+enum ReviewJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("review_job_status_enum")
+}
+
+enum ReviewTrigger {
+  WEBHOOK
+  MANUAL
+  RETRY
+
+  @@map("review_trigger_enum")
+}
+
+enum ReviewSeverity {
+  INFO
+  LOW
+  MEDIUM
+  HIGH
+
+  @@map("review_severity_enum")
+}
+
+enum WebhookProcessingStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+
+  @@map("webhook_processing_status_enum")
+}
+
+// ======================================================
+// INSTALLATIONS
+// ======================================================
+
+model Installation {
+  id BigInt @id @default(autoincrement())
+
+  githubInstallationId BigInt @unique @map("github_installation_id")
+  githubAccountId      BigInt @map("github_account_id")
+
+  accountLogin String @map("account_login") @db.VarChar(255)
+
+  accountType AccountType @map("account_type")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  repositories Repository[]
+
+  @@map("installations")
+}
+
+// ======================================================
+// REPOSITORIES
+// ======================================================
+
+model Repository {
+  id BigInt @id @default(autoincrement())
+
+  installationId BigInt @map("installation_id")
+
+  githubRepositoryId BigInt @unique @map("github_repository_id")
+
+  name String @db.VarChar(255)
+
+  fullName String @map("full_name") @db.VarChar(500)
+
+  defaultBranch String @map("default_branch") @db.VarChar(100)
+
+  isPrivate Boolean @default(false) @map("is_private")
+
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  pullRequests PullRequest[]
+
+  @@index([installationId])
+  @@map("repositories")
+}
+
+// ======================================================
+// PULL REQUESTS
+// ======================================================
+
+model PullRequest {
+  id BigInt @id @default(autoincrement())
+
+  repositoryId BigInt @map("repository_id")
+
+  githubPullRequestId BigInt @unique @map("github_pull_request_id")
+
+  prNumber Int @map("pr_number")
+
+  title String @db.Text
+
+  status PullRequestStatus
+
+  headSha String @map("head_sha") @db.VarChar(40)
+
+  baseSha String @map("base_sha") @db.VarChar(40)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  reviewJob ReviewJob?
+
+  @@unique([repositoryId, prNumber])
+  @@map("pull_requests")
+}
+
+model ReviewJob {
+  id BigInt @id @default(autoincrement())
+
+  pullRequestId BigInt @unique @map("pull_request_id")
+
+  status ReviewJobStatus @default(PENDING)
+
+  triggerType ReviewTrigger @default(WEBHOOK) @map("trigger_type")
+
+  errorMessage String? @map("error_message") @db.Text
+
+  startedAt DateTime? @map("started_at") @db.Timestamp(6)
+
+  completedAt DateTime? @map("completed_at") @db.Timestamp(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  pullRequest PullRequest @relation(fields: [pullRequestId], references: [id], onDelete: Cascade)
+
+  reviewComments ReviewComment[]
+
+  @@index([status, createdAt])
+  @@map("review_jobs")
+}
+
+model ReviewComment {
+  id BigInt @id @default(autoincrement())
+
+  reviewJobId BigInt @map("review_job_id")
+
+  filePath String @map("file_path") @db.Text
+
+  lineNumber Int @map("line_number")
+
+  severity ReviewSeverity
+
+  comment String @db.Text
+
+  suggestedFix String? @map("suggested_fix") @db.Text
+
+  postedToGithub Boolean @default(false) @map("posted_to_github")
+
+  githubCommentId BigInt? @unique @map("github_comment_id")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  reviewJob ReviewJob @relation(fields: [reviewJobId], references: [id], onDelete: Cascade)
+
+  @@index([reviewJobId])
+  @@map("review_comments")
+}
+
+model WebhookEvent {
+  id BigInt @id @default(autoincrement())
+
+  githubDeliveryId String @unique @map("github_delivery_id") @db.Uuid
+
+  eventType String @map("event_type") @db.VarChar(100)
+
+  action String @db.VarChar(100)
+
+  payload Json @db.JsonB
+
+  processingStatus WebhookProcessingStatus @default(PENDING) @map("processing_status")
+
+  errorMessage String? @map("error_message") @db.Text
+
+  processedAt DateTime? @map("processed_at") @db.Timestamp(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([processingStatus, createdAt])
+  @@map("webhook_events")
+}

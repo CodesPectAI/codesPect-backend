@@ -3,4 +3,9 @@ dist
 .env
 .env.*
 .jolli
+.agents
+.windsurf
 .claude
+.codespect-githubapp-private-key.pem
+
+/src/generated/prisma
