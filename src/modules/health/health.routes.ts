@@ -3,6 +3,6 @@ import { Router } from "express";
 
 const router = Router();
 
-router.get("/", getHealth);
+router.get("/health", getHealth);
 
-export default router;  
+export default router;
