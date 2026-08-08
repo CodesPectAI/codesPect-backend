@@ -5,7 +5,7 @@
     "target": "ES2022",
     "strict": true,
     "skipLibCheck": true,
-    "module": "NodeNext",
+    "module": "ESNext",
     "moduleResolution": "NodeNext",
     "esModuleInterop": true
   }

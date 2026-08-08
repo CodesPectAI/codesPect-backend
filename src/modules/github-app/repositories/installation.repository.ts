@@ -1,5 +1,5 @@
-import { prisma } from "../../../lib/prisma";
-import { AccountType } from "../../../generated/prisma/client";
+import { prisma } from "../../../lib/prisma.js";
+import { AccountType } from "../../../generated/prisma/client.js";
 
 interface installationDataType {
   githubInstallationId: bigint;

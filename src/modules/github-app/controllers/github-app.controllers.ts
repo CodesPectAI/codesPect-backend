@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { handleGithubWebHook } from "../services/github-app.services";
+import { handleGithubWebHook } from "../services/github-app.services.js";
 
 export async function handleWebhook(
   req: Request,

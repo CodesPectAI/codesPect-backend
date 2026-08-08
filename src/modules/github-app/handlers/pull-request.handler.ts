@@ -1,36 +1,52 @@
-import { createAppAuth } from "@octokit/auth-app";
-import { Octokit } from "@octokit/rest";
+interface PullRequestWebhookPayload {
+  repository: {
+    owner: { login: string };
+    name: string;
+  };
+  pull_request: {
+    number: number;
+  };
+}
 
-export async function handlePullRequest(payload: any) {
-  const installationId = payload.installation.id;
+interface PullRequestOctokit {
+  issues: {
+    createComment: (params: {
+      owner: string;
+      repo: string;
+      issue_number: number;
+      body: string;
+    }) => Promise<unknown>;
+  };
+}
+
+interface HandlePullRequestParams {
+  octokit: PullRequestOctokit;
+  payload: PullRequestWebhookPayload;
+}
+
+export async function handlePullRequest({
+  octokit,
+  payload,
+}: HandlePullRequestParams) {
   const owner = payload.repository.owner.login;
   const repo = payload.repository.name;
   const pull_number = payload.pull_request.number;
 
-  const octokit = new Octokit({
-    authStrategy: createAppAuth,
-    auth: {
-      appId: process.env.GITHUB_APP_ID,
-      privateKey: process.env.GITHUB_PRIVATE_KEY,
-      installationId,
-    },
-  });
-
-  const files = await octokit.pulls.listFiles({
-    owner,
-    repo,
-    pull_number,
-  });
-
-  console.dir(files, { depth: null });
-
-  return files.data
-    .filter(
-      (file) =>
-        file.patch && (file.status === "added" || file.status === "modified"),
-    )
-    .map((file) => ({
-      filename: file.filename,
-      patch: file.patch,
-    }));
+  console.log(`Received a pull request event for #${pull_number}`);
+  try {
+    const result = await await octokit.issues.createComment({
+      owner,
+      repo,
+      issue_number: pull_number,
+      body: "PR opened 🚀",
+    });
+    console.dir(result, { depth: null });
+  } catch (error: any) {
+    if (error.response) {
+      console.error(
+        `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`,
+      );
+    }
+    console.error(error);
+  }
 }

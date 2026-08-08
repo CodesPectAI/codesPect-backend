@@ -1,5 +1,5 @@
-import { saveInstallation } from "../repositories/installation.repository";
-import { AccountType } from "../../../generated/prisma/client";
+import { saveInstallation } from "../repositories/installation.repository.js";
+import { AccountType } from "../../../generated/prisma/client.js";
 
 // interface InstallationWebhookPayload {
 //   installation: {
