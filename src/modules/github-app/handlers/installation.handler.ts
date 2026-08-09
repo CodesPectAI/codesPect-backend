@@ -1,5 +1,5 @@
 import { saveInstallation } from "../repositories/installation.repository.js";
-import { AccountType } from "../../../generated/prisma/client.js";
+import { saveRepository } from "../repositories/repository.repository.js";
 
 // interface InstallationWebhookPayload {
 //   installation: {
@@ -12,7 +12,7 @@ import { AccountType } from "../../../generated/prisma/client.js";
 //   };
 // }
 
-export async function handleInstallationEvent(payload: any) {
+export async function handleInstallationEvent(octokit: any, payload: any) {
   const installationId = payload.installation?.id;
   const account = payload.installation?.account;
 
@@ -21,23 +21,15 @@ export async function handleInstallationEvent(payload: any) {
     return;
   }
 
-  const accountType =
-    account.type === "User"
-      ? AccountType.USER
-      : account.type === "Organization"
-        ? AccountType.ORGANIZATION
-        : undefined;
-
-  if (!accountType) {
-    throw new Error(`Unsupported GitHub account type: ${account.type}`);
-  }
-
-  await saveInstallation({
+  const savedInstallation = await saveInstallation({
     githubInstallationId: BigInt(installationId),
     githubAccountId: BigInt(account.id),
     accountLogin: account.login,
-    accountType,
+    accountType: account.type,
   });
 
   console.log("Installation saved in DB");
+  const { data } = await octokit.apps.listReposAccessibleToInstallation();
+  await saveRepository(savedInstallation.id, data.repositories);
+  console.log("repositories save to db");
 }
