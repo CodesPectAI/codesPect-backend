@@ -1,5 +1,6 @@
-import { handleInstallationEvent } from "../handlers/installation.handler";
-import { handlePullRequest } from "../handlers/pull-request.handler";
+import { getInstallationOctokit } from "../../../shared/octokit.js";
+import { handleInstallationEvent } from "../handlers/installation.handler.js";
+import { handlePullRequest } from "../handlers/pull-request.handler.js";
 
 export async function handleGithubWebHook(
   event: string | undefined,
@@ -16,8 +17,17 @@ export async function handleGithubWebHook(
       break;
 
     case "pull_request":
-      console.log("pul request created");
-      await handlePullRequest(payload);
+      console.log("pull request created");
+
+      const installationId = payload.installation?.id;
+
+      if (!installationId) {
+        throw new Error("Missing installation ID");
+      }
+
+      const octokit = getInstallationOctokit(installationId);
+
+      await handlePullRequest({ octokit, payload });
       break;
 
     default:

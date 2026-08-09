@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { handleWebhook } from "../controllers/github-app.controllers";
-import { verifyGithubSignature } from "../../../middleware/github-signature.middleware";
+import { handleWebhook } from "../controllers/github-app.controllers.js";
+import { verifyGithubSignature } from "../../../middleware/github-signature.middleware.js";
 
 const router = Router();
 
