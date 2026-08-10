@@ -1,23 +1,11 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
-
-// generator client {
-//   provider = "prisma-client-js"
-// }
-
-// datasource db {
-//   provider = "postgresql"
-//   // Connection URLs are now configured outside of the schema (see Prisma docs):
-//   // Move DATABASE_URL to prisma.config.ts or provide the connection when
-//   // constructing the PrismaClient (adapter/accelerateUrl).
-//   // url = env("DATABASE_URL")
-// }
 
 // ======================================================
 // ENUMS
@@ -155,7 +143,7 @@ model PullRequest {
 
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 
-  reviewJob ReviewJob?
+  reviewJob ReviewJob[]
 
   @@unique([repositoryId, prNumber])
   @@map("pull_requests")
@@ -164,7 +152,9 @@ model PullRequest {
 model ReviewJob {
   id BigInt @id @default(autoincrement())
 
-  pullRequestId BigInt @unique @map("pull_request_id")
+  pullRequestId BigInt @map("pull_request_id")
+
+  headSha String @map("head_sha") @db.VarChar(40)
 
   status ReviewJobStatus @default(PENDING)
 

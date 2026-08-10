@@ -7,5 +7,6 @@ dist
 .windsurf
 .claude
 .codespect-githubapp-private-key.pem
+worker.txt
 
 /src/generated/prisma

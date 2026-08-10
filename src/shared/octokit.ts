@@ -1,18 +1,26 @@
-// import { app } from "./github-app";
+// import { App } from "@octokit/app";
+import { githubConfig } from "../config/github.js";
+
+// const app = new App({
+//   appId: Number(githubConfig.appId),
+//   privateKey: githubConfig.privateKey,
+// });
 
 // export async function getInstallationOctokit(installationId: number) {
-//   return app.getInstallationOctokit(installationId);
+//   const octokit = await app.getInstallationOctokit(installationId);
+//   return octokit;
 // }
 
-// import { app } from "./github-app";
+import { Octokit } from "@octokit/rest";
+import { createAppAuth } from "@octokit/auth-app";
 
-// export async function getInstallationOctokit(installationId: number) {
-//   return await app.getInstallationOctokit(installationId);
-// }
-
-import { app } from "./github-app.js";
-
-export async function getInstallationOctokit(installationId: number) {
-  const octokit = await app.getInstallationOctokit(installationId);
-  return octokit;
+export function getInstallationAccessTooken(installationId: BigInt) {
+  return new Octokit({
+    authStrategy: createAppAuth,
+    auth: {
+      appId: githubConfig.appId,
+      privateKey: githubConfig.privateKey,
+      installationId: installationId,
+    },
+  });
 }
