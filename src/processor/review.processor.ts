@@ -69,6 +69,7 @@ export async function processReviewJob(job: any) {
     // run AI review
     const aiResults = await analyzeCodeWithAI(formattedFiles);
     console.log("🤖 CodesPect AI comments:", aiResults.length);
+    console.dir(aiResults, { depth: null });
 
     // store comments
     await Promise.all(
@@ -94,7 +95,7 @@ export async function processReviewJob(job: any) {
       body: "🤖 CodesPect AI Code Review",
       comments: aiResults.map((c: any) => ({
         path: c.filePath,
-        body: c.body,
+        body: c.comment,
         line: c.line || 1,
       })),
     });
@@ -129,5 +130,6 @@ export async function processReviewJob(job: any) {
         errorMessage: error.message,
       },
     });
+    throw error;
   }
 }
