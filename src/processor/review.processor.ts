@@ -13,7 +13,11 @@ export async function processReviewJob(job: any) {
       include: {
         pullRequest: {
           include: {
-            repository: true,
+            repository: {
+              include: {
+                installation: true,
+              },
+            },
           },
         },
       },
@@ -39,7 +43,7 @@ export async function processReviewJob(job: any) {
 
     // fetch PR files (Octokit)
     const octokit = await getInstallationAccessTooken(
-      existingJob.pullRequest.repository.installationId,
+      existingJob.pullRequest.repository.installation.githubInstallationId,
     );
 
     const { data: files } = await octokit.pulls.listFiles({
