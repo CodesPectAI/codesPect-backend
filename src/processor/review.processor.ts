@@ -66,6 +66,13 @@ export async function processReviewJob(job: any) {
       patch: file.patch,
     }));
 
+    for (const file of relevantFiles) {
+      console.log("\n==============================");
+      console.log("FILE:", file.filename);
+      console.log(file.patch);
+      console.log("==============================");
+    }
+
     // run AI review
     const aiResults = await analyzeCodeWithAI(formattedFiles);
     console.log("🤖 CodesPect AI comments:", aiResults.length);
