@@ -5,12 +5,15 @@ import { config } from "dotenv";
 config();
 
 const app = express();
-app.use(express.json({
+app.use(
+  express.json({
     verify(req, res, buf) {
-        req.rawBody = Buffer.from(buf);
+      req.rawBody = Buffer.from(buf);
     },
-}))
+  }),
+);
+
 app.use(healthRouter);
-app.use("/github", githubAppRouter)
+app.use("/github", githubAppRouter);
 
 export default app;

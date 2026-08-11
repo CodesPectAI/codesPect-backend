@@ -134,13 +134,28 @@ export async function handlePullRequestEvent(payload: any) {
   });
 
   console.log("🔥 ReviewJob created:", reviewJob.id);
+  const [owner] = repository.fullName.split("/");
 
   // 4️⃣ Push to queue (IMPORTANT)
-  await reviewQueue.add("review-pr", {
-    reviewJobId: reviewJob.id.toString(), // ✅ FIX
-    repositoryId: repository.id.toString(),
-    prNumber: pr.number,
-  });
+  await reviewQueue.add(
+    "review-pr",
+    {
+      reviewJobId: reviewJob.id.toString(), // ✅ FIX
+      repositoryId: repository.id.toString(),
+      owner: owner,
+      repo: repository.name,
+      prNumber: pr.number,
+    },
+    {
+      attempts: 5,
+      backoff: {
+        type: "exponential",
+        delay: 6000,
+      },
+      removeOnComplete: true,
+      removeOnFail: 100,
+    },
+  );
 
   console.log("🚀 PR queued for review");
 }
