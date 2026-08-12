@@ -249,17 +249,6 @@ export async function processReviewJob(job: any) {
       };
     });
 
-    // Debug: inspect parsed lines
-    console.log("\n📋 Changed lines:");
-
-    for (const file of formattedFiles) {
-      console.log(`\n📄 ${file.filename}`);
-
-      console.dir(file.changedLines, {
-        depth: null,
-      });
-    }
-
     // =========================================================
     // 8. Remove files that have no parseable changed lines
     // =========================================================
@@ -293,10 +282,6 @@ export async function processReviewJob(job: any) {
     const aiResults = await analyzeCodeWithAI(filesForAI);
 
     console.log("\n🤖 CodesPect AI comments:", aiResults.length);
-
-    console.dir(aiResults, {
-      depth: null,
-    });
 
     // =========================================================
     // 10. Build valid line map
