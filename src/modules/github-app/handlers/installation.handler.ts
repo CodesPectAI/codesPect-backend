@@ -18,7 +18,12 @@ export async function handleInstallationEvent(octokit: any, payload: any) {
   });
 
   console.log("Installation saved in DB");
-  // const { data } = await octokit.apps.listReposAccessibleToInstallation();
-  await saveRepository(savedInstallation.id, payload.repositories ?? []);
+  const { data } = await octokit.apps.listReposAccessibleToInstallation({
+    per_page: 100,
+  });
+
+  console.log("📦 Repositories found:", data.repositories.length);
+
+  await saveRepository(savedInstallation.id, data.repositories);
   console.log("repositories save to db");
 }
