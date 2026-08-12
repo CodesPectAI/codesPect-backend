@@ -5,7 +5,10 @@
   "main": "server.ts",
   "scripts": {
     "api": "tsx watch src/server.ts",
-    "worker": "tsx watch src/workers/review.worker.ts"
+    "worker": "tsx watch src/workers/review.worker.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:worker": "node dist/workers/review.worker.js"
   },
   "keywords": [],
   "author": "",
